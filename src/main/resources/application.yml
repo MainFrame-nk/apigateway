@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: lb://auth-service  # Проксирование в AuthService
+          predicates:
+            - Path=/auth/**  # Маршруты, начинающиеся с /auth
+          filters:
+            - StripPrefix=1  # Удаляем префикс, чтобы запросы правильно маршрутизировались
+            - PreserveHostHeader=true  # Добавляем заголовок хоста
+            - AddRequestHeader=Authorization, "Bearer {jwtToken}"  # Прокидываем токен, если нужно вручную
+
+#        - id: user-service
+#          uri: lb://user-service  # Проксирование в UserService
+#          predicates:
+#            - Path=/user/**  # Маршруты для UserService
+#          filters:
+#            - StripPrefix=1  # Удаляем префикс
+
+#        - id: lobby-service
+#          uri: lb://lobby-service  # Проксирование в LobbyService
+#          predicates:
+#            - Path=/lobby/**  # Маршруты для LobbyService
+#          filters:
+#            - StripPrefix=1
