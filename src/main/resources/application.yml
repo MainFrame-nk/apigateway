@@ -11,15 +11,21 @@ spring:
           filters:
             - StripPrefix=1  # Удаляем префикс, чтобы запросы правильно маршрутизировались
             - PreserveHostHeader=true  # Добавляем заголовок хоста
-            - AddRequestHeader=Authorization, "Bearer {jwtToken}"  # Прокидываем токен, если нужно вручную
+            #- AddRequestHeader=Authorization, "Bearer {jwtToken}" # Прокидываем токен, если нужно вручную
+        - id: user-service
+          uri: lb://user-service  # Проксирование в UserService
+          predicates:
+            - Path=/users/**  # Маршруты для UserService
+          filters:
+            - StripPrefix=1  # Удаляем префикс
+            - PreserveHostHeader=true  # Обязательно
+            #- AddRequestHeader=Authorization, "#{Authorization}"
+            #- AddRequestHeader=Authorization, "Bearer {jwtToken}"
+server:
+  port: 8080
 
-#        - id: user-service
-#          uri: lb://user-service  # Проксирование в UserService
-#          predicates:
-#            - Path=/user/**  # Маршруты для UserService
-#          filters:
-#            - StripPrefix=1  # Удаляем префикс
-
+jwt:
+  secret: U7512_nG32Eu&261hJp-aSd-KjaaDcbQ
 #        - id: lobby-service
 #          uri: lb://lobby-service  # Проксирование в LobbyService
 #          predicates:

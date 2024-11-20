@@ -35,14 +35,10 @@ public class TokenPresenceFilter implements org.springframework.web.server.WebFi
             System.out.println("Token not found, continuing...");
             return exchange.getResponse().setComplete(); // Завершаем обработку
         }
+        exchange.getRequest().getHeaders()
+                .forEach((key, value) -> System.out.println("Request Header: " + key + " -> " + value));
 
         System.out.println("Token found: " + authorizationHeader);
-        // Устанавливаем аутентификацию в SecurityContext
-        // Здесь создаем "пустой" токен без проверки
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(null, null, null);
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
         return chain.filter(exchange);
     }
 }

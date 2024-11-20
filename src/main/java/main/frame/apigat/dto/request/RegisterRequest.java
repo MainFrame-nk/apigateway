@@ -1,18 +1,18 @@
-package main.frame.game.dto.request;
+package main.frame.apigat.dto.request;
 
 
 import lombok.Data;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+//import javax.validation.constraints.Email;
+//import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 
 @Data
 public class RegisterRequest {
-    @Email
-    @NotBlank
+//    @Email
+//    @NotBlank
     private String email;
-    @NotBlank
+ //   @NotBlank
     private String password;
 
     private String username;

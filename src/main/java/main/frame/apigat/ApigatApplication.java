@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"main.frame.shared", "main.frame"})  // Обязательно добавь sharedmodule
+//ComponentScan(basePackages = {"main.frame.shared", "main.frame"})  // Обязательно добавь sharedmodule
 public class ApigatApplication {
 
     public static void main(String[] args) {
@@ -22,8 +22,8 @@ public class ApigatApplication {
         return builder.routes()
                 .route("auth-service", r -> r.path("/auth/**")
                         .uri("lb://auth-service"))
-                .route("user-service", r -> r.path("/user/**")
-                        .uri("lb://USER-SERVICE"))
+//                .route("user-service", r -> r.path("/user/**")
+//                        .uri("lb://USER-SERVICE"))
                 .build();
     }
 }
