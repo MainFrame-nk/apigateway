@@ -1,8 +1,10 @@
 package main.frame.apigat.client;
 
+import main.frame.apigat.dto.request.ChangePasswordRequest;
 import main.frame.shared.dto.RoleDTO;
 import main.frame.shared.dto.UserDTO;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -12,8 +14,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -119,6 +123,90 @@ public class UserServiceClient {
                 .doOnError(e -> System.err.println("Ошибка при обновлении ролей: " + e.getMessage()));
     }
 
+    public Mono<ResponseEntity<List<UserDTO>>> getUsersByRole(String roleName, String token) {
+        return webClient
+                .get()
+                .uri("/role/" + roleName)
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, token))  // Передаем токен в заголовке
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,  // Если ошибка, генерируем исключение
+                        response -> {
+                            System.out.println("Ошибка при запросе к UserService, статус: " + response.statusCode());
+                            return Mono.error(new RuntimeException("Не удалось получить данные пользователя"));
+                        }
+                )
+                .toEntity(new ParameterizedTypeReference<List<UserDTO>>() {})  // Преобразуем ответ в список UserDTO
+                .doOnError(e -> System.err.println("Ошибка при запросе к UserService: " + e.getMessage()))  // Логируем ошибку
+                .onErrorResume(e -> Mono.empty());  // Возвращаем пустой Mono в случае ошибки
+    }
+
+    public Mono<ResponseEntity<List<UserDTO>>> searchUsers(String email, String username, String phoneNumber,
+                                                           Boolean active, LocalDateTime dateOfCreated, String roleName, String token) {
+        return webClient
+                .get()
+                .uri(uriBuilder -> {
+                    UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/search"); // Correct usage of UriComponentsBuilder
+                    if (email != null) builder.queryParam("email", email);
+                    if (username != null) builder.queryParam("username", username);
+                    if (phoneNumber != null) builder.queryParam("phoneNumber", phoneNumber);
+                    if (active != null) builder.queryParam("active", active);
+                    if (dateOfCreated != null) builder.queryParam("dateOfCreated", dateOfCreated);
+                    if (roleName != null) builder.queryParam("roleName", roleName);
+                    return builder.build().toUri(); // Correct method to build URI
+                })
+              //  .header(HttpHeaders.AUTHORIZATION, token)
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, token))  // Передаем токен
+                .retrieve()
+                .toEntityList(UserDTO.class);
+    }
 
 
+    public Mono<ResponseEntity<String>> activateUser(Long id, String token) {
+        return webClient
+                .put()
+                .uri(id + "/activate")
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, token))  // Передаем токен в заголовке
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,  // Если ошибка, генерируем исключение
+                        response -> {
+                            System.out.println("Ошибка при запросе к UserService, статус: " + response.statusCode());
+                            return Mono.error(new RuntimeException("Не удалось получить данные пользователя"));
+                        }
+                )
+                .toEntity(String.class)  // Преобразуем ответ в объект UserDTO
+                .doOnError(e -> System.err.println("Ошибка при запросе к UserService: " + e.getMessage()))  // Логируем ошибку
+                .onErrorResume(e -> Mono.empty());  // Возвращаем пустой Mono в случае ошибки
+    }
+
+
+    public Mono<ResponseEntity<String>> deactivateUser(Long id, String token) {
+        return webClient
+                .put()
+                .uri(id + "/deactivate")
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, token))  // Передаем токен в заголовке
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,  // Если ошибка, генерируем исключение
+                        response -> {
+                            System.out.println("Ошибка при запросе к UserService, статус: " + response.statusCode());
+                            return Mono.error(new RuntimeException("Не удалось получить данные пользователя"));
+                        }
+                )
+                .toEntity(String.class)
+                .doOnError(e -> System.err.println("Ошибка при запросе к UserService: " + e.getMessage()))  // Логируем ошибку
+                .onErrorResume(e -> Mono.empty());  // Возвращаем пустой Mono в случае ошибки
+    }
+
+    public Mono<ResponseEntity<String>> changePassword(Long id, ChangePasswordRequest changePasswordRequest, String token) {
+        return webClient.put()
+                .uri(uriBuilder -> uriBuilder.path("/{id}/change-password")
+                        .build(id))
+                //.header(HttpHeaders.AUTHORIZATION, token)
+                .headers(headers -> headers.set(HttpHeaders.AUTHORIZATION, token))  // Передаем токен
+                .bodyValue(changePasswordRequest)
+                .retrieve()
+                .toEntity(String.class);
+    }
 }

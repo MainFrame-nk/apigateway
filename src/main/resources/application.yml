@@ -21,14 +21,15 @@ spring:
             - PreserveHostHeader=true  # Обязательно
             #- AddRequestHeader=Authorization, "#{Authorization}"
             #- AddRequestHeader=Authorization, "Bearer {jwtToken}"
+        - id: lobby-service
+          uri: lb://lobby-service  # Проксирование в LobbyService
+          predicates:
+            - Path=/lobby/**  # Маршруты для LobbyService
+          filters:
+            - StripPrefix=1
+            - PreserveHostHeader=true
 server:
   port: 8080
 
 jwt:
   secret: U7512_nG32Eu&261hJp-aSd-KjaaDcbQ
-#        - id: lobby-service
-#          uri: lb://lobby-service  # Проксирование в LobbyService
-#          predicates:
-#            - Path=/lobby/**  # Маршруты для LobbyService
-#          filters:
-#            - StripPrefix=1
